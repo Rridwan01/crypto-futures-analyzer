@@ -17,15 +17,30 @@ import OrderBookFlow from './components/OrderBookFlow';
 import SignalDashboard from './components/SignalDashboard';
 import SettingsModal from './components/SettingsModal';
 import AlertsManager from './components/AlertsManager';
+import MarketScanner from './components/MarketScanner';
+import QuantBacktestPanel from './components/QuantBacktestPanel';
 
 import { Settings, RefreshCw, BarChart2, ShieldAlert } from 'lucide-react';
+import { HTF_MAPPING } from './services/htfBias';
 
 export default function App() {
-  const { symbol, interval, setCandles, updateOrderBook, setTicker24h, setFundingAndOI, setFearAndGreed, setHistoricalFearAndGreed } = useTradingStore();
+  const { 
+    symbol, 
+    interval, 
+    setCandles, 
+    setHtfCandles, 
+    runHistoricalBacktest, 
+    updateOrderBook, 
+    setTicker24h, 
+    setFundingAndOI, 
+    setFearAndGreed, 
+    setHistoricalFearAndGreed, 
+    runScanner 
+  } = useTradingStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 1. Initial Load: Fear & Greed (done once)
+  // 1. Initial Load: Fear & Greed + scanner boot (done once)
   useEffect(() => {
     async function loadSentiment() {
       const fngData = await fetchFearAndGreed();
@@ -34,6 +49,7 @@ export default function App() {
     }
     
     loadSentiment();
+    runScanner(fetchHistoricalCandles, fetchTicker24h);
     
     // Auto request notifications permission on boot if desired
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
@@ -49,8 +65,17 @@ export default function App() {
   const handleReloadData = async () => {
     setIsRefreshing(true);
     try {
+      // Load main candles
       const candlesHistory = await fetchHistoricalCandles(symbol, interval);
       setCandles(candlesHistory);
+      
+      // Load HTF candles
+      const htfInterval = HTF_MAPPING[interval] || '1h';
+      const htfHistory = await fetchHistoricalCandles(symbol, htfInterval);
+      setHtfCandles(htfHistory);
+
+      // Run backtest
+      runHistoricalBacktest();
       
       const depth = await fetchOrderBook(symbol);
       updateOrderBook(depth);
@@ -73,9 +98,10 @@ export default function App() {
     // Setup active WebSocket stream subscription
     const unsubscribe = subscribeToSymbol(symbol, interval);
 
-    // REST poll details every 30s to keep Order Book depth and OI metrics precise
+    // REST poll details every 30s to keep Order Book depth and OI metrics precise + run background scanner
     const pollId = setInterval(async () => {
       const activeSym = useTradingStore.getState().symbol;
+      const activeInterval = useTradingStore.getState().interval;
       const depth = await fetchOrderBook(activeSym);
       updateOrderBook(depth);
 
@@ -84,6 +110,13 @@ export default function App() {
 
       const fundingOi = await fetchFundingAndOI(activeSym);
       setFundingAndOI(fundingOi);
+
+      // Fetch HTF candles in background
+      const htfInterval = HTF_MAPPING[activeInterval] || '1h';
+      const htfHistory = await fetchHistoricalCandles(activeSym, htfInterval);
+      setHtfCandles(htfHistory);
+
+      runScanner(fetchHistoricalCandles, fetchTicker24h);
     }, 30000);
 
     return () => {
@@ -102,7 +135,7 @@ export default function App() {
             <BarChart2 size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="text-sm font-extrabold tracking-tight text-white leading-none">ANTIGRAVITY</h1>
+            <h1 className="text-sm font-extrabold tracking-tight text-white leading-none">BANDHASHIRA</h1>
             <span className="text-[9px] uppercase tracking-wider font-semibold text-slate-500 mt-0.5 block">
               Crypto Futures Algorithmic Analyzer
             </span>
@@ -150,12 +183,14 @@ export default function App() {
           {/* Side panels (takes 1 column) */}
           <div className="flex flex-col gap-6">
             <SignalDashboard />
+            <MarketScanner />
           </div>
         </div>
 
-        {/* Row 4: Flow analysis & depth */}
-        <div className="w-full">
+        {/* Row 4: Flow analysis & backtesting */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full">
           <OrderBookFlow />
+          <QuantBacktestPanel />
         </div>
 
       </main>

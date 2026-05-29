@@ -91,7 +91,7 @@ export default function IndicatorPanels() {
 
       candles.forEach((c, i) => {
         const item = macd[i];
-        if (item && item.macd !== null) {
+        if (item && item.macd !== null && item.signal !== null && item.hist !== null) {
           const t = formattedTime(c);
           macdData.push({ time: t, value: item.macd });
           signalData.push({ time: t, value: item.signal });
@@ -99,8 +99,8 @@ export default function IndicatorPanels() {
             time: t,
             value: item.hist,
             color: item.hist >= 0 
-              ? (i > 0 && macd[i-1] && item.hist > macd[i-1].hist ? 'rgba(34, 197, 94, 0.6)' : 'rgba(34, 197, 94, 0.35)')
-              : (i > 0 && macd[i-1] && item.hist < macd[i-1].hist ? 'rgba(239, 68, 68, 0.6)' : 'rgba(239, 68, 68, 0.35)')
+              ? (i > 0 && macd[i-1] && macd[i-1].hist !== null && item.hist > macd[i-1].hist ? 'rgba(34, 197, 94, 0.6)' : 'rgba(34, 197, 94, 0.35)')
+              : (i > 0 && macd[i-1] && macd[i-1].hist !== null && item.hist < macd[i-1].hist ? 'rgba(239, 68, 68, 0.6)' : 'rgba(239, 68, 68, 0.35)')
           });
         }
       });

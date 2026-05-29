@@ -51,7 +51,7 @@ export async function fetchHistoricalCandles(symbol, interval) {
   } catch (err) {
     console.warn(`Failed to fetch Binance history for ${symbol}. Activating offline simulator mode. Error:`, err);
     isSimulatorActive = true;
-    return generateMockCandles(interval);
+    return generateMockCandles(symbol, interval);
   }
 }
 
@@ -348,26 +348,58 @@ function startFallbackSimulator(symbol, interval) {
 }
 
 /**
- * Helper: Generate mock candles for safe development fallbacks
+ * Helper: Mulberry32 seedable pseudo-random number generator
  */
-function generateMockCandles(interval) {
+function seedRandom(seedStr) {
+  let h = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    h = (h << 5) - h + seedStr.charCodeAt(i);
+    h |= 0;
+  }
+  return function() {
+    let t = h += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+}
+
+/**
+ * Helper: Generate mock candles for safe development fallbacks (deterministic based on symbol name)
+ */
+function generateMockCandles(symbol, interval) {
   const list = [];
   const count = 500;
   const intervalSec = intervalToSeconds(interval);
   
-  let time = Date.now() - count * intervalSec * 1000;
-  let close = 68450.0;
+  const nowRounded = Math.floor(Date.now() / (intervalSec * 1000)) * (intervalSec * 1000);
+  let time = nowRounded - count * intervalSec * 1000;
+  
+  const rand = seedRandom(symbol.toUpperCase());
+  
+  // Base price mapping for presets to match realistic coin pricing
+  const sym = symbol.toUpperCase();
+  let close = 100.0;
+  if (sym.includes('BTC')) close = 68450.0;
+  else if (sym.includes('ETH')) close = 3540.0;
+  else if (sym.includes('SOL')) close = 165.0;
+  else if (sym.includes('BNB')) close = 590.0;
+  else if (sym.includes('ARB')) close = 1.15;
+  else if (sym.includes('DOGE')) close = 0.145;
+  else if (sym.includes('XRP')) close = 0.52;
+  else if (sym.includes('ADA')) close = 0.45;
+  else if (sym.includes('LINK')) close = 16.5;
   
   for (let i = 0; i < count; i++) {
-    // Generate trendy random-walk candles
-    const noise = (Math.random() - 0.495) * 0.002; // max 0.2% change per bar
     const open = close;
+    // Generate deterministic noise
+    const noise = (rand() - 0.495) * 0.002;
     close = open * (1 + noise);
     
     const bodySize = Math.abs(close - open);
-    const high = Math.max(open, close) + bodySize * Math.random() * 0.8;
-    const low = Math.min(open, close) - bodySize * Math.random() * 0.8;
-    const volume = Math.random() * 250 + 10;
+    const high = Math.max(open, close) + bodySize * rand() * 0.8;
+    const low = Math.min(open, close) - bodySize * rand() * 0.8;
+    const volume = rand() * 250 + 10;
     
     list.push({ time, open, high, low, close, volume });
     time += intervalSec * 1000;
