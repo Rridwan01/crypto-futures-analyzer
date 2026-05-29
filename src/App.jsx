@@ -19,6 +19,12 @@ import AlertsManager from './components/AlertsManager';
 import MarketScanner from './components/MarketScanner';
 import QuantBacktestPanel from './components/QuantBacktestPanel';
 
+import { 
+  MobileSignalIntelligenceCard, 
+  MobileConfluenceAccordion, 
+  MobileMarketFlowPanel 
+} from './components/MobileSignalViews';
+
 import { Settings, RefreshCw, BarChart2, ShieldAlert, Search } from 'lucide-react';
 import { HTF_MAPPING } from './services/htfBias';
 
@@ -49,6 +55,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [isProMode, setIsProMode] = useState(false);
 
   // 1. Initial Load: Fear & Greed + scanner boot (done once)
   useEffect(() => {
@@ -138,7 +145,7 @@ export default function App() {
   // 3. Handle mobile viewport layout defaults
   useEffect(() => {
     const handleResize = () => {
-      const isMobile = window.innerWidth < 1024; // Tailwind lg breakpoint
+      const isMobile = window.innerWidth < 1024; // lg breakpoint
       const currentMode = useTradingStore.getState().workspaceMode;
       
       if (isMobile && currentMode !== 'signals' && currentMode !== 'flow' && currentMode !== 'research' && currentMode !== 'analyze') {
@@ -277,6 +284,18 @@ export default function App() {
             </button>
           </div>
 
+          {/* Pro Mode Toggle (only visible on mobile screens) */}
+          <button 
+            onClick={() => setIsProMode(!isProMode)}
+            className={`px-2 py-0.5 text-[8.5px] uppercase font-extrabold tracking-wider rounded border transition-all font-mono lg:hidden ${
+              isProMode 
+                ? 'bg-indigo-950/50 border-indigo-500/40 text-indigo-400' 
+                : 'bg-slate-900/40 border-slate-900 text-slate-500'
+            }`}
+          >
+            PRO: {isProMode ? 'ON' : 'OFF'}
+          </button>
+
           <button
             onClick={handleReloadData}
             title="Reload Data"
@@ -316,7 +335,21 @@ export default function App() {
           {workspaceMode === 'analyze' && (
             <div className="flex flex-col gap-4 flex-grow overflow-y-auto">
               <ChartPanel />
-              <IndicatorPanels />
+              
+              {/* On mobile screens, display key modules stacked below chart */}
+              <div className="lg:hidden flex flex-col gap-4">
+                <MobileSignalIntelligenceCard />
+                <MobileConfluenceAccordion isProMode={isProMode} />
+                <MobileMarketFlowPanel />
+                
+                {/* Under Pro Mode on mobile, render detailed indicators subplots */}
+                {isProMode && <IndicatorPanels />}
+              </div>
+
+              {/* On desktop viewports, render indicator subplots persistently */}
+              <div className="hidden lg:block">
+                <IndicatorPanels />
+              </div>
             </div>
           )}
 
