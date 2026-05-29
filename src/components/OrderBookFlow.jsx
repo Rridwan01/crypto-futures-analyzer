@@ -136,7 +136,7 @@ export default function OrderBookFlow() {
   };
 
   return (
-    <div className="glass-panel p-4 flex flex-col gap-4 h-[440px]">
+    <div className="glass-panel p-4 flex flex-col gap-4 h-[780px] md:h-[440px]">
       
       {/* Panel header */}
       <div className="flex items-center gap-2 border-b border-slate-800/80 pb-3">
@@ -144,7 +144,7 @@ export default function OrderBookFlow() {
         <span className="text-sm font-semibold text-slate-200">Order Flow & CVD Analyzer</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-y-auto md:overflow-hidden">
         
         {/* Left Column: Order Book Table */}
         <div className="flex flex-col h-full border border-slate-800/50 rounded-lg p-2 bg-slate-900/30">

@@ -353,7 +353,7 @@ export default function ChartPanel() {
   };
 
   return (
-    <div className="glass-panel p-4 flex flex-col gap-3 relative h-[480px]">
+    <div className="glass-panel p-4 flex flex-col gap-3 relative h-[320px] md:h-[480px]">
       
       {/* Chart Toolbar */}
       <div className="flex items-center justify-between gap-4 flex-wrap select-none border-b border-slate-800/80 pb-3">

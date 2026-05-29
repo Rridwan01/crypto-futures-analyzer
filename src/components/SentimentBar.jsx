@@ -74,16 +74,16 @@ export default function SentimentBar() {
   };
 
   return (
-    <div className="glass-panel px-6 py-3 flex flex-wrap items-center justify-between gap-6 text-xs text-slate-300">
+    <div className="glass-panel p-3.5 grid grid-cols-2 md:flex md:flex-wrap md:items-center justify-between gap-4 md:gap-6 text-xs text-slate-300">
       
       {/* Fear & Greed Index */}
-      <div className="flex items-center gap-3 border-r border-slate-800/80 pr-6 last:border-0">
-        <Compass className="text-blue-400" size={16} />
+      <div className="flex items-center gap-2.5 md:border-r border-slate-900 md:pr-6 last:border-0 col-span-1">
+        <Compass className="text-blue-400 shrink-0" size={15} />
         <div>
-          <div className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider">Fear & Greed Index</div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className={`px-2 py-0.5 rounded-md border text-xs font-bold ${getFngColorClass(fearAndGreed.value)}`}>
-              {fearAndGreed.value} — {fearAndGreed.classification}
+          <div className="text-[9px] uppercase font-semibold text-slate-500 tracking-wider">Fear & Greed</div>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className={`px-1.5 py-0.5 rounded-[3.5px] border text-[10px] font-bold ${getFngColorClass(fearAndGreed.value)}`}>
+              {fearAndGreed.value}
             </span>
             {renderSparkline()}
           </div>
@@ -91,46 +91,46 @@ export default function SentimentBar() {
       </div>
 
       {/* Funding Rate */}
-      <div className="flex items-center gap-3 border-r border-slate-800/80 pr-6 last:border-0">
-        <Percent className="text-indigo-400" size={16} />
+      <div className="flex items-center gap-2.5 md:border-r border-slate-900 md:pr-6 last:border-0 col-span-1">
+        <Percent className="text-indigo-400 shrink-0" size={14} />
         <div>
-          <div className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider">Funding Rate (8h)</div>
-          <div className={`mt-0.5 font-mono font-bold text-sm ${fundingRate >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <div className="text-[9px] uppercase font-semibold text-slate-500 tracking-wider">Funding Rate</div>
+          <div className={`mt-0.5 font-mono font-bold text-xs ${fundingRate >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {(fundingRate * 100).toFixed(4)}%
           </div>
         </div>
       </div>
 
       {/* Open Interest */}
-      <div className="flex items-center gap-3 border-r border-slate-800/80 pr-6 last:border-0">
-        <Activity className="text-cyan-400" size={16} />
+      <div className="flex items-center gap-2.5 md:border-r border-slate-900 md:pr-6 last:border-0 col-span-1">
+        <Activity className="text-cyan-400 shrink-0" size={14} />
         <div>
-          <div className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider">Open Interest</div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="font-mono text-sm font-bold text-slate-100">
+          <div className="text-[9px] uppercase font-semibold text-slate-500 tracking-wider">Open Interest</div>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="font-mono text-xs font-bold text-slate-100">
               {formatNumber(openInterest)}
             </span>
-            <span className={`text-[10px] font-bold ${openInterestChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {openInterestChange >= 0 ? '▲' : '▼'} {(openInterestChange * 100).toFixed(1)}%
+            <span className={`text-[9px] font-bold ${openInterestChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {(openInterestChange * 100).toFixed(1)}%
             </span>
           </div>
         </div>
       </div>
 
       {/* Ticker 24h details */}
-      <div className="flex items-center gap-6 flex-grow md:flex-grow-0 justify-between md:justify-end">
+      <div className="flex items-center gap-4 col-span-1 md:flex-grow-0 justify-between md:justify-end">
         <div className="text-right">
-          <div className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider">24h Vol</div>
-          <div className="font-mono mt-0.5 text-slate-100 font-semibold">
-            {formatNumber(ticker24h.volume * (ticker24h.lastPrice || 1))}
+          <div className="text-[9px] uppercase font-semibold text-slate-500 tracking-wider font-mono">24h Vol</div>
+          <div className="font-mono mt-0.5 text-slate-205 font-bold text-xs">
+            {formatNumber(ticker24h.volume * (ticker24h.lastPrice || 1)).replace('.00', '')}
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider">24h High / Low</div>
-          <div className="font-mono mt-0.5 text-slate-200">
-            <span className="text-green-400">${ticker24h.high?.toLocaleString()}</span>
-            <span className="text-slate-600 mx-1">/</span>
-            <span className="text-red-400">${ticker24h.low?.toLocaleString()}</span>
+        <div className="text-right hidden sm:block">
+          <div className="text-[9px] uppercase font-semibold text-slate-500 tracking-wider font-mono">24h High/Low</div>
+          <div className="font-mono mt-0.5 text-xs text-slate-300">
+            <span className="text-emerald-450">${ticker24h.high?.toLocaleString()}</span>
+            <span className="text-slate-700 mx-1">/</span>
+            <span className="text-rose-450">${ticker24h.low?.toLocaleString()}</span>
           </div>
         </div>
       </div>

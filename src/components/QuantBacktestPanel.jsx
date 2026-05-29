@@ -75,7 +75,7 @@ export default function QuantBacktestPanel() {
   };
 
   return (
-    <div className="glass-panel p-4 flex flex-col gap-4 h-[440px] xl:h-[450px]">
+    <div className="glass-panel p-4 flex flex-col gap-4 h-[680px] md:h-[450px]">
       
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-900 pb-3">
@@ -143,7 +143,7 @@ export default function QuantBacktestPanel() {
           </div>
 
           {/* Equity Chart & Historical Table Split */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-y-auto md:overflow-hidden">
             {/* Left: Equity Growth Curve */}
             <div className="flex flex-col justify-between">
               {renderEquityCurve()}

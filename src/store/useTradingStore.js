@@ -140,6 +140,7 @@ export const useTradingStore = create((set, get) => ({
   
   // Scanner state
   scannerData: {},
+  scannerExpanded: false,
 
   // Higher Timeframe (HTF) context
   htfBias: null,
@@ -148,6 +149,9 @@ export const useTradingStore = create((set, get) => ({
   // Backtester results
   backtestResults: null,
 
+  // UI Workspace State
+  workspaceMode: 'analyze',
+
   // Actions
   setSymbol: (symbol) => set({ symbol, candles: [], cvdHistory: [], orderBook: { bids: [], asks: [], updateId: 0 } }),
   setInterval: (interval) => set({ interval, candles: [], cvdHistory: [] }),
@@ -155,6 +159,8 @@ export const useTradingStore = create((set, get) => ({
   setHistoricalFearAndGreed: (history) => set({ historicalFearAndGreed: history }),
   setFundingAndOI: (data) => set({ fundingRate: data.fundingRate, openInterest: data.openInterest, openInterestChange: data.openInterestChange }),
   setTicker24h: (ticker) => set({ ticker24h: ticker }),
+  setWorkspaceMode: (workspaceMode) => set({ workspaceMode }),
+  setScannerExpanded: (scannerExpanded) => set({ scannerExpanded }),
   
   setHtfCandles: (htfCandles) => {
     const bias = calculateHtfBias(htfCandles);

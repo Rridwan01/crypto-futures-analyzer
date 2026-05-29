@@ -147,7 +147,7 @@ export default function IndicatorPanels() {
   }, [activeTab, candles, rsi, macd, atr]);
 
   return (
-    <div className="glass-panel p-4 flex flex-col gap-3 h-[240px]">
+    <div className="glass-panel p-4 flex flex-col gap-3 h-[180px] md:h-[240px]">
       
       {/* Tabs list */}
       <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 select-none">
