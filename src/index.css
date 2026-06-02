@@ -4,7 +4,8 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased overflow-x-hidden font-sans;
+    background-color: #0b0f14;
+    @apply text-slate-100 antialiased overflow-x-hidden font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -15,17 +16,17 @@
   }
   
   ::-webkit-scrollbar-track {
-    @apply bg-slate-900/50;
+    @apply bg-slate-900/30;
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-700/50 rounded-full hover:bg-slate-600/50 transition-colors;
+    @apply bg-slate-800 rounded-full hover:bg-slate-700 transition-colors;
   }
 }
 
 /* Institutional, clean slate panels */
 .glass-panel {
-  @apply bg-slate-950/40 backdrop-blur-md border border-slate-900/70 rounded-lg shadow-sm;
+  @apply bg-[#11161d]/40 backdrop-blur border border-slate-900/80 rounded-md shadow-sm;
 }
 
 /* Muted professional trading terminal glow accents */

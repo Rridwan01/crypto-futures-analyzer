@@ -18,14 +18,9 @@ import SettingsModal from './components/SettingsModal';
 import AlertsManager from './components/AlertsManager';
 import MarketScanner from './components/MarketScanner';
 import QuantBacktestPanel from './components/QuantBacktestPanel';
+import ScalperWorkspace from './components/ScalperWorkspace';
 
-import { 
-  MobileSignalIntelligenceCard, 
-  MobileConfluenceAccordion, 
-  MobileMarketFlowPanel 
-} from './components/MobileSignalViews';
-
-import { Settings, RefreshCw, BarChart2, ShieldAlert, Search } from 'lucide-react';
+import { Settings, RefreshCw, BarChart2, Search } from 'lucide-react';
 import { HTF_MAPPING } from './services/htfBias';
 
 export default function App() {
@@ -55,7 +50,6 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchInput, setSearchInput] = useState('');
-  const [isProMode, setIsProMode] = useState(false);
 
   // 1. Initial Load: Fear & Greed + scanner boot (done once)
   useEffect(() => {
@@ -148,10 +142,8 @@ export default function App() {
       const isMobile = window.innerWidth < 1024; // lg breakpoint
       const currentMode = useTradingStore.getState().workspaceMode;
       
-      if (isMobile && currentMode !== 'signals' && currentMode !== 'flow' && currentMode !== 'research' && currentMode !== 'analyze') {
-        setWorkspaceMode('signals');
-      } else if (!isMobile && currentMode === 'signals') {
-        setWorkspaceMode('analyze');
+      if (isMobile && currentMode !== 'scalper' && currentMode !== 'flow' && currentMode !== 'research' && currentMode !== 'analyze') {
+        setWorkspaceMode('scalper');
       }
     };
 
@@ -183,11 +175,13 @@ export default function App() {
     return `Scanned ${list.length} markets. No active confluences.`;
   };
 
+  const isScalperMode = workspaceMode === 'scalper';
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-blue-600/35 selection:text-white">
+    <div className="min-h-screen bg-[#0b0f14] text-slate-100 flex flex-col font-sans selection:bg-blue-600/35 selection:text-white">
       
       {/* Top Header Command Layer */}
-      <header className="border-b border-slate-900 bg-slate-950/80 backdrop-blur sticky top-0 z-35 px-3 py-2 flex items-center justify-between shadow select-none">
+      <header className="border-b border-slate-900/60 bg-[#0b0f14]/80 backdrop-blur sticky top-0 z-35 px-3 py-2 flex items-center justify-between shadow select-none">
         
         {/* Left Side: Active Symbol Select & Timeframe dropdown */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
@@ -221,7 +215,7 @@ export default function App() {
               onChange={(e) => setSearchInput(e.target.value)}
               className="bg-slate-950 text-[9px] text-slate-350 placeholder-slate-650 pl-6 pr-2 py-0.5 rounded border border-slate-900 focus:outline-none focus:border-blue-500/30 w-24 font-mono"
             />
-            <Search className="absolute left-2 text-slate-600" size={9} />
+            <Search className="absolute left-2 text-slate-650" size={9} />
           </form>
 
           {/* Timeframe selector dropdown */}
@@ -243,8 +237,8 @@ export default function App() {
           </span>
         </div>
 
-        {/* Middle Area: Consolidated Regime/HTF Bias Metrics (hidden on mobile screen) */}
-        {currentSignal && (
+        {/* Middle Area: Consolidated Regime/HTF Bias Metrics (hidden in scalper mode / mobile screen) */}
+        {currentSignal && !isScalperMode && (
           <div className="hidden xl:flex items-center gap-4 text-[9px] font-mono text-slate-550 border-l border-slate-900 pl-4">
             <span>Regime: <strong className="text-slate-300 uppercase">{currentSignal.regime.replace('_', ' ')}</strong></span>
             <span>HTF: <strong className="text-slate-300 uppercase">{htfBias?.bias ? htfBias.bias.replace('_', ' ') : 'NEUTRAL'}</strong></span>
@@ -257,18 +251,17 @@ export default function App() {
           
           {/* Workspace Tabs selector */}
           <div className="flex items-center bg-slate-950/85 p-0.5 border border-slate-900 rounded font-mono">
-            {/* Signals tab is ONLY visible on mobile screens */}
             <button 
-              onClick={() => setWorkspaceMode('signals')}
-              className={`px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all lg:hidden ${workspaceMode === 'signals' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              onClick={() => setWorkspaceMode('scalper')}
+              className={`px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'scalper' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
-              Signals
+              Scalper
             </button>
             <button 
               onClick={() => setWorkspaceMode('analyze')}
               className={`px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'analyze' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
-              {window.innerWidth < 1024 ? 'Chart' : 'Analyze'}
+              Chart
             </button>
             <button 
               onClick={() => setWorkspaceMode('flow')}
@@ -283,18 +276,6 @@ export default function App() {
               Research
             </button>
           </div>
-
-          {/* Pro Mode Toggle (only visible on mobile screens) */}
-          <button 
-            onClick={() => setIsProMode(!isProMode)}
-            className={`px-2 py-0.5 text-[8.5px] uppercase font-extrabold tracking-wider rounded border transition-all font-mono lg:hidden ${
-              isProMode 
-                ? 'bg-indigo-950/50 border-indigo-500/40 text-indigo-400' 
-                : 'bg-slate-900/40 border-slate-900 text-slate-500'
-            }`}
-          >
-            PRO: {isProMode ? 'ON' : 'OFF'}
-          </button>
 
           <button
             onClick={handleReloadData}
@@ -322,34 +303,20 @@ export default function App() {
         {/* Left Side: Workspace area */}
         <div className="flex-grow lg:w-3/4 flex flex-col gap-4 overflow-hidden">
           
-          {/* Sentiment strip */}
-          <SentimentBar />
+          {/* Sentiment strip (hidden in scalper mode to reduce clutter) */}
+          {!isScalperMode && <SentimentBar />}
           
           {/* Switchable workspace content */}
-          {workspaceMode === 'signals' && (
-            <div className="flex-grow overflow-y-auto lg:hidden">
-              <SignalDashboard />
+          {workspaceMode === 'scalper' && (
+            <div className="flex-grow overflow-y-auto">
+              <ScalperWorkspace />
             </div>
           )}
 
           {workspaceMode === 'analyze' && (
             <div className="flex flex-col gap-4 flex-grow overflow-y-auto">
               <ChartPanel />
-              
-              {/* On mobile screens, display key modules stacked below chart */}
-              <div className="lg:hidden flex flex-col gap-4">
-                <MobileSignalIntelligenceCard />
-                <MobileConfluenceAccordion isProMode={isProMode} />
-                <MobileMarketFlowPanel />
-                
-                {/* Under Pro Mode on mobile, render detailed indicators subplots */}
-                {isProMode && <IndicatorPanels />}
-              </div>
-
-              {/* On desktop viewports, render indicator subplots persistently */}
-              <div className="hidden lg:block">
-                <IndicatorPanels />
-              </div>
+              <IndicatorPanels />
             </div>
           )}
 
@@ -367,10 +334,12 @@ export default function App() {
 
         </div>
 
-        {/* Right Side: Stacked Confluence Sidebar (30% width) - Hidden on mobile, persistent on desktop */}
-        <div className="hidden lg:flex lg:w-1/4 shrink-0 flex-col gap-4 min-h-[500px] overflow-hidden">
-          <SignalDashboard />
-        </div>
+        {/* Right Side: Confluence Sidebar (Hidden in scalper mode or mobile viewport) */}
+        {!isScalperMode && (
+          <div className="hidden lg:flex lg:w-1/4 shrink-0 flex-col gap-4 min-h-[500px] overflow-hidden">
+            <SignalDashboard />
+          </div>
+        )}
 
       </main>
 
@@ -387,7 +356,7 @@ export default function App() {
               {scannerExpanded ? 'SCANNER STATE [ACTIVE] ▼' : 'SCANNER STATE [COLLAPSED] ▲'}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-[7.5px] font-mono text-slate-500">
+          <div className="flex items-center gap-2 text-[7.5px] font-mono text-slate-500 font-bold">
             <span>{getScannerSummaryText()}</span>
           </div>
         </div>

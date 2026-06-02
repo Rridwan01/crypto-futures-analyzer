@@ -298,6 +298,22 @@ export const useTradingStore = create((set, get) => ({
       read: false
     };
 
+    // Desktop notifications
+    if (settings.desktopNotifications && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      try {
+        const notif = new Notification(`Crypto Signal: ${symbol} (${interval})`, {
+          body: `Signal: ${signal.recommendation} | Score: ${signal.score} | Price: $${price}`,
+          icon: '/favicon.ico'
+        });
+        notif.onclick = () => {
+          window.focus();
+          get().setSymbol(symbol);
+        };
+      } catch (e) {
+        console.warn("Desktop notification creation or click handler setup failed:", e);
+      }
+    }
+
     set(state => {
       // Audio trigger
       if (settings.soundEnabled) {
@@ -320,14 +336,6 @@ export const useTradingStore = create((set, get) => ({
         } catch (e) {
           console.warn('Audio alert failed to initialize:', e);
         }
-      }
-
-      // Desktop notifications
-      if (settings.desktopNotifications && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-        new Notification(`Crypto Signal: ${symbol} (${interval})`, {
-          body: `Signal: ${signal.recommendation} | Score: ${signal.score} | Price: $${price}`,
-          icon: '/favicon.ico'
-        });
       }
 
       return {

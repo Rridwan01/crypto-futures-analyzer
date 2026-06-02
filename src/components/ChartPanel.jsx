@@ -39,7 +39,8 @@ export default function ChartPanel() {
     settings,
     updateSettings,
     symbol,
-    interval
+    interval,
+    workspaceMode
   } = useTradingStore();
 
   const [hoverData, setHoverData] = useState(null);
@@ -198,6 +199,14 @@ export default function ChartPanel() {
 
     // Apply visibility and line values
     const visible = settings.visibleIndicators;
+    const isScalper = workspaceMode === 'scalper';
+    
+    const showEma9 = isScalper ? true : visible.ema9;
+    const showEma21 = isScalper ? true : visible.ema21;
+    const showEma55 = isScalper ? false : visible.ema55;
+    const showSma200 = isScalper ? false : visible.sma200;
+    const showVwap = isScalper ? true : visible.vwap;
+    const showBb = isScalper ? false : visible.bb;
     
     const updateLineSeries = (ref, valArray, isVisible) => {
       if (!ref.current) return;
@@ -212,14 +221,14 @@ export default function ChartPanel() {
       }
     };
 
-    updateLineSeries(ema9SeriesRef, ema9, visible.ema9);
-    updateLineSeries(ema21SeriesRef, ema21, visible.ema21);
-    updateLineSeries(ema55SeriesRef, ema55, visible.ema55);
-    updateLineSeries(sma200SeriesRef, sma200, visible.sma200);
-    updateLineSeries(vwapSeriesRef, vwap, visible.vwap);
+    updateLineSeries(ema9SeriesRef, ema9, showEma9);
+    updateLineSeries(ema21SeriesRef, ema21, showEma21);
+    updateLineSeries(ema55SeriesRef, ema55, showEma55);
+    updateLineSeries(sma200SeriesRef, sma200, showSma200);
+    updateLineSeries(vwapSeriesRef, vwap, showVwap);
 
     // Bollinger Bands
-    if (visible.bb && bb.length === candles.length) {
+    if (showBb && bb.length === candles.length) {
       const upperData = [];
       const middleData = [];
       const lowerData = [];
@@ -314,7 +323,7 @@ export default function ChartPanel() {
       });
     }
 
-  }, [candles, ema9, ema21, ema55, sma200, vwap, bb, patterns, rsiDivergences, volumeProfile, settings.visibleIndicators]);
+  }, [candles, ema9, ema21, ema55, sma200, vwap, bb, patterns, rsiDivergences, volumeProfile, settings.visibleIndicators, workspaceMode]);
 
   // Handle visibility settings toggle
   const toggleVisibility = (key) => {
@@ -327,7 +336,7 @@ export default function ChartPanel() {
 
   // Render Horizontal volume profile overlay on the left
   const renderVolumeProfileSidebar = () => {
-    if (!settings.visibleIndicators.volumeProfile || !volumeProfile || !volumeProfile.profile || volumeProfile.profile.length === 0) return null;
+    if (workspaceMode === 'scalper' || !settings.visibleIndicators.volumeProfile || !volumeProfile || !volumeProfile.profile || volumeProfile.profile.length === 0) return null;
     
     const maxVol = Math.max(...volumeProfile.profile.map(p => p.volume));
     
@@ -353,44 +362,46 @@ export default function ChartPanel() {
   };
 
   return (
-    <div className="glass-panel p-4 flex flex-col gap-3 relative h-[320px] md:h-[480px]">
+    <div className={`glass-panel p-4 flex flex-col gap-3 relative transition-all ${workspaceMode === 'scalper' ? 'h-[240px] md:h-[320px]' : 'h-[320px] md:h-[480px]'}`}>
       
       {/* Chart Toolbar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap select-none border-b border-slate-800/80 pb-3">
-        <div className="flex items-center gap-2">
-          <Activity className="text-blue-500" size={16} />
-          <span className="text-sm font-semibold text-slate-200">Main Trading Chart</span>
-        </div>
+      {workspaceMode !== 'scalper' && (
+        <div className="flex items-center justify-between gap-4 flex-wrap select-none border-b border-slate-800/80 pb-3">
+          <div className="flex items-center gap-2">
+            <Activity className="text-blue-500" size={16} />
+            <span className="text-sm font-semibold text-slate-200">Main Trading Chart</span>
+          </div>
 
-        {/* Toggles */}
-        <div className="flex flex-wrap gap-3 text-[11px] font-semibold text-slate-400">
-          {[
-            { key: 'ema9', label: 'EMA 9' },
-            { key: 'ema21', label: 'EMA 21' },
-            { key: 'ema55', label: 'EMA 55' },
-            { key: 'sma200', label: 'SMA 200' },
-            { key: 'vwap', label: 'VWAP' },
-            { key: 'bb', label: 'B-Bands' },
-            { key: 'volumeProfile', label: 'Vol Profile' }
-          ].map((item) => {
-            const active = settings.visibleIndicators[item.key];
-            return (
-              <button
-                key={item.key}
-                onClick={() => toggleVisibility(item.key)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-all duration-200 ${
-                  active 
-                    ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' 
-                    : 'bg-slate-800/50 text-slate-500 hover:text-slate-300 border border-slate-800'
-                }`}
-              >
-                {active ? <Eye size={12} /> : <EyeOff size={12} />}
-                {item.label}
-              </button>
-            );
-          })}
+          {/* Toggles */}
+          <div className="flex flex-wrap gap-3 text-[11px] font-semibold text-slate-400">
+            {[
+              { key: 'ema9', label: 'EMA 9' },
+              { key: 'ema21', label: 'EMA 21' },
+              { key: 'ema55', label: 'EMA 55' },
+              { key: 'sma200', label: 'SMA 200' },
+              { key: 'vwap', label: 'VWAP' },
+              { key: 'bb', label: 'B-Bands' },
+              { key: 'volumeProfile', label: 'Vol Profile' }
+            ].map((item) => {
+              const active = settings.visibleIndicators[item.key];
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => toggleVisibility(item.key)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-all duration-200 ${
+                    active 
+                      ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' 
+                      : 'bg-slate-800/50 text-slate-500 hover:text-slate-300 border border-slate-800'
+                  }`}
+                >
+                  {active ? <Eye size={12} /> : <EyeOff size={12} />}
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Floating Tooltip/Details */}
       {hoverData && (

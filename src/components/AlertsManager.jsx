@@ -3,7 +3,7 @@ import { useTradingStore } from '../store/useTradingStore';
 import { BellRing, X, Volume2, ShieldCheck, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 export default function AlertsManager() {
-  const { alerts, dismissAlert, clearAlerts, settings } = useTradingStore();
+  const { alerts, dismissAlert, clearAlerts, settings, setSymbol } = useTradingStore();
 
   const handleTestSound = () => {
     try {
@@ -65,7 +65,8 @@ export default function AlertsManager() {
           return (
             <div
               key={alert.id}
-              className={`bg-slate-900/95 border backdrop-blur p-3.5 rounded-lg shadow-lg flex gap-3 items-start justify-between pointer-events-auto animate-slide-in ${borderClass}`}
+              onClick={() => setSymbol(alert.symbol)}
+              className={`bg-slate-900/95 border backdrop-blur p-3.5 rounded-lg shadow-lg flex gap-3 items-start justify-between pointer-events-auto animate-slide-in cursor-pointer hover:bg-slate-850/95 active:scale-[0.98] transition-all ${borderClass}`}
             >
               {/* Icon indicator */}
               <div className={`p-1.5 rounded-lg border ${indicatorBg}`}>
@@ -91,7 +92,10 @@ export default function AlertsManager() {
 
               {/* Dismiss button */}
               <button
-                onClick={() => dismissAlert(alert.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismissAlert(alert.id);
+                }}
                 className="text-slate-500 hover:text-slate-300 p-0.5 rounded hover:bg-slate-800 transition-colors"
               >
                 <X size={12} />

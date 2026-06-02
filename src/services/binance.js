@@ -56,12 +56,31 @@ export async function fetchHistoricalCandles(symbol, interval) {
 }
 
 /**
+ * Helper: Get mock base price for a symbol
+ */
+export function getMockPriceForSymbol(symbol) {
+  const sym = symbol.toUpperCase();
+  if (sym.includes('BTC')) return 68450.0;
+  if (sym.includes('ETH')) return 3540.0;
+  if (sym.includes('SOL')) return 165.0;
+  if (sym.includes('BNB')) return 590.0;
+  if (sym.includes('ARB')) return 1.15;
+  if (sym.includes('DOGE')) return 0.145;
+  if (sym.includes('XRP')) return 0.52;
+  if (sym.includes('ADA')) return 0.45;
+  if (sym.includes('LINK')) return 16.5;
+  return 100.0;
+}
+
+/**
  * Fetch Order Book depth
  */
 export async function fetchOrderBook(symbol) {
   if (isSimulatorActive) {
     const store = useTradingStore.getState();
-    const mid = store.candles.length > 0 ? store.candles[store.candles.length - 1].close : 65000;
+    const mid = (store.candles.length > 0 && store.symbol.toUpperCase() === symbol.toUpperCase())
+      ? store.candles[store.candles.length - 1].close 
+      : getMockPriceForSymbol(symbol);
     return generateMockOrderBook(mid);
   }
 
@@ -77,7 +96,9 @@ export async function fetchOrderBook(symbol) {
   } catch (err) {
     console.error(`Failed to fetch depth for ${symbol}:`, err);
     const store = useTradingStore.getState();
-    const mid = store.candles.length > 0 ? store.candles[store.candles.length - 1].close : 65000;
+    const mid = (store.candles.length > 0 && store.symbol.toUpperCase() === symbol.toUpperCase())
+      ? store.candles[store.candles.length - 1].close 
+      : getMockPriceForSymbol(symbol);
     return generateMockOrderBook(mid);
   }
 }
@@ -88,7 +109,9 @@ export async function fetchOrderBook(symbol) {
 export async function fetchTicker24h(symbol) {
   if (isSimulatorActive) {
     const store = useTradingStore.getState();
-    const lastPrice = store.candles.length > 0 ? store.candles[store.candles.length - 1].close : 65000;
+    const lastPrice = (store.candles.length > 0 && store.symbol.toUpperCase() === symbol.toUpperCase())
+      ? store.candles[store.candles.length - 1].close 
+      : getMockPriceForSymbol(symbol);
     return {
       priceChangePercent: 2.45,
       volume: 12500,
@@ -115,7 +138,8 @@ export async function fetchTicker24h(symbol) {
     };
   } catch (err) {
     console.error(`Failed to fetch ticker for ${symbol}:`, err);
-    return { priceChangePercent: 1.25, volume: 15400, high: 66200, low: 64100, lastPrice: 65100 };
+    const lastPrice = getMockPriceForSymbol(symbol);
+    return { priceChangePercent: 1.25, volume: 15400, high: lastPrice * 1.02, low: lastPrice * 0.98, lastPrice };
   }
 }
 
@@ -377,18 +401,7 @@ function generateMockCandles(symbol, interval) {
   
   const rand = seedRandom(symbol.toUpperCase());
   
-  // Base price mapping for presets to match realistic coin pricing
-  const sym = symbol.toUpperCase();
-  let close = 100.0;
-  if (sym.includes('BTC')) close = 68450.0;
-  else if (sym.includes('ETH')) close = 3540.0;
-  else if (sym.includes('SOL')) close = 165.0;
-  else if (sym.includes('BNB')) close = 590.0;
-  else if (sym.includes('ARB')) close = 1.15;
-  else if (sym.includes('DOGE')) close = 0.145;
-  else if (sym.includes('XRP')) close = 0.52;
-  else if (sym.includes('ADA')) close = 0.45;
-  else if (sym.includes('LINK')) close = 16.5;
+  let close = getMockPriceForSymbol(symbol);
   
   for (let i = 0; i < count; i++) {
     const open = close;
