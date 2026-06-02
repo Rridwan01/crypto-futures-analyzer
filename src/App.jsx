@@ -181,60 +181,86 @@ export default function App() {
     <div className="min-h-screen bg-[#0b0f14] text-slate-100 flex flex-col font-sans selection:bg-blue-600/35 selection:text-white">
       
       {/* Top Header Command Layer */}
-      <header className="border-b border-slate-900/60 bg-[#0b0f14]/80 backdrop-blur sticky top-0 z-35 px-3 py-2 flex items-center justify-between shadow select-none">
+      <header className="border-b border-slate-900/60 bg-[#0b0f14]/80 backdrop-blur sticky top-0 z-35 px-3 py-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 shadow select-none">
         
-        {/* Left Side: Active Symbol Select & Timeframe dropdown */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <div className="flex items-center gap-1.5 mr-1 hidden md:flex">
-            <div className="bg-gradient-to-tr from-blue-600 to-indigo-500 p-1.5 rounded shadow">
-              <BarChart2 size={11} className="text-white" />
+        {/* Row 1: Symbol, Timeframe, Live & Action Buttons (Reload, Settings) */}
+        <div className="flex items-center justify-between w-full md:w-auto gap-2">
+          
+          {/* Logo, Symbol select, Search, Timeframe, Live */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <div className="flex items-center gap-1.5 mr-1 hidden md:flex">
+              <div className="bg-gradient-to-tr from-blue-600 to-indigo-500 p-1.5 rounded shadow">
+                <BarChart2 size={11} className="text-white" />
+              </div>
+              <span className="text-[10px] font-extrabold tracking-widest text-white font-mono leading-none">BANDHASHIRA</span>
             </div>
-            <span className="text-[10px] font-extrabold tracking-widest text-white font-mono leading-none">BANDHASHIRA</span>
+
+            {/* Symbol Select Selector */}
+            <select 
+              value={symbol} 
+              onChange={(e) => setSymbol(e.target.value)} 
+              className="bg-slate-950 text-[10px] font-mono font-bold text-slate-200 border border-slate-900 px-1.5 py-0.5 rounded focus:outline-none focus:border-blue-500/30"
+            >
+              <option value="BTCUSDT">BTC</option>
+              <option value="ETHUSDT">ETH</option>
+              <option value="SOLUSDT">SOL</option>
+              <option value="BNBUSDT">BNB</option>
+              <option value="ARBUSDT">ARB</option>
+              <option value="DOGEUSDT">DOGE</option>
+            </select>
+
+            {/* Custom Search Form (hidden on mobile screen) */}
+            <form onSubmit={handleSearchSubmit} className="relative flex items-center hidden sm:flex">
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="bg-slate-950 text-[9px] text-slate-350 placeholder-slate-650 pl-6 pr-2 py-0.5 rounded border border-slate-900 focus:outline-none focus:border-blue-500/30 w-24 font-mono"
+              />
+              <Search className="absolute left-2 text-slate-650" size={9} />
+            </form>
+
+            {/* Timeframe selector dropdown */}
+            <select 
+              value={interval} 
+              onChange={(e) => setStoreInterval(e.target.value)} 
+              className="bg-slate-950 text-[10px] font-mono font-bold text-slate-200 border border-slate-900 px-1.5 py-0.5 rounded focus:outline-none focus:border-blue-500/30"
+            >
+              <option value="5m">5m</option>
+              <option value="15m">15m</option>
+              <option value="1h">1h</option>
+              <option value="4h">4h</option>
+            </select>
+
+            {/* Live Indicator */}
+            <span className="flex items-center gap-1 text-[8px] font-bold text-slate-500 font-mono tracking-wider">
+              <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+              LIVE
+            </span>
+          </div>
+          
+          {/* Mobile Action Buttons (Hidden on Desktop) */}
+          <div className="flex items-center gap-1.5 md:hidden">
+            <button
+              onClick={handleReloadData}
+              title="Reload Data"
+              className={`p-1.5 bg-slate-900 hover:bg-slate-850 hover:text-white border border-slate-800 rounded transition-all ${
+                isRefreshing ? 'animate-spin text-blue-400' : 'text-slate-400'
+              }`}
+            >
+              <RefreshCw size={10} />
+            </button>
+            
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center p-1.5 bg-slate-900 border border-slate-800 hover:bg-slate-850 hover:text-white text-slate-300 rounded transition-colors"
+              title="Configure"
+            >
+              <Settings size={10} />
+            </button>
           </div>
 
-          {/* Symbol Select Selector */}
-          <select 
-            value={symbol} 
-            onChange={(e) => setSymbol(e.target.value)} 
-            className="bg-slate-950 text-[10px] font-mono font-bold text-slate-200 border border-slate-900 px-1.5 py-0.5 rounded focus:outline-none focus:border-blue-500/30"
-          >
-            <option value="BTCUSDT">BTC</option>
-            <option value="ETHUSDT">ETH</option>
-            <option value="SOLUSDT">SOL</option>
-            <option value="BNBUSDT">BNB</option>
-            <option value="ARBUSDT">ARB</option>
-            <option value="DOGEUSDT">DOGE</option>
-          </select>
-
-          {/* Custom Search Form (hidden on mobile screen) */}
-          <form onSubmit={handleSearchSubmit} className="relative flex items-center hidden sm:flex">
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="bg-slate-950 text-[9px] text-slate-350 placeholder-slate-650 pl-6 pr-2 py-0.5 rounded border border-slate-900 focus:outline-none focus:border-blue-500/30 w-24 font-mono"
-            />
-            <Search className="absolute left-2 text-slate-650" size={9} />
-          </form>
-
-          {/* Timeframe selector dropdown */}
-          <select 
-            value={interval} 
-            onChange={(e) => setStoreInterval(e.target.value)} 
-            className="bg-slate-950 text-[10px] font-mono font-bold text-slate-200 border border-slate-900 px-1.5 py-0.5 rounded focus:outline-none focus:border-blue-500/30"
-          >
-            <option value="5m">5m</option>
-            <option value="15m">15m</option>
-            <option value="1h">1h</option>
-            <option value="4h">4h</option>
-          </select>
-
-          {/* Live Indicator */}
-          <span className="flex items-center gap-1 text-[8px] font-bold text-slate-500 font-mono tracking-wider">
-            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-            LIVE
-          </span>
         </div>
 
         {/* Middle Area: Consolidated Regime/HTF Bias Metrics (hidden in scalper mode / mobile screen) */}
@@ -246,54 +272,57 @@ export default function App() {
           </div>
         )}
 
-        {/* Right Side: Switcher Tabs, Reload and Config */}
-        <div className="flex items-center gap-1.5">
+        {/* Row 2: Workspace Tab Switcher & Desktop Buttons */}
+        <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
           
           {/* Workspace Tabs selector */}
-          <div className="flex items-center bg-slate-950/85 p-0.5 border border-slate-900 rounded font-mono">
+          <div className="flex items-center bg-slate-950/85 p-0.5 border border-slate-900 rounded font-mono w-full md:w-auto justify-between md:justify-start gap-1">
             <button 
               onClick={() => setWorkspaceMode('scalper')}
-              className={`px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'scalper' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 md:flex-none text-center px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'scalper' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
               Scalper
             </button>
             <button 
               onClick={() => setWorkspaceMode('analyze')}
-              className={`px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'analyze' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 md:flex-none text-center px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'analyze' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
               Chart
             </button>
             <button 
               onClick={() => setWorkspaceMode('flow')}
-              className={`px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'flow' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 md:flex-none text-center px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'flow' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
               Flow
             </button>
             <button 
               onClick={() => setWorkspaceMode('research')}
-              className={`px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'research' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 md:flex-none text-center px-2 py-0.5 text-[8.5px] uppercase font-bold tracking-wider rounded transition-all ${workspaceMode === 'research' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
               Research
             </button>
           </div>
 
-          <button
-            onClick={handleReloadData}
-            title="Reload Data"
-            className={`p-1.5 bg-slate-900 hover:bg-slate-850 hover:text-white border border-slate-800 rounded transition-all ${
-              isRefreshing ? 'animate-spin text-blue-400' : 'text-slate-400'
-            }`}
-          >
-            <RefreshCw size={10} />
-          </button>
-          
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center p-1.5 bg-slate-900 border border-slate-800 hover:bg-slate-850 hover:text-white text-slate-300 rounded transition-colors"
-            title="Configure"
-          >
-            <Settings size={10} />
-          </button>
+          {/* Desktop Only Action Buttons */}
+          <div className="hidden md:flex items-center gap-1.5">
+            <button
+              onClick={handleReloadData}
+              title="Reload Data"
+              className={`p-1.5 bg-slate-900 hover:bg-slate-850 hover:text-white border border-slate-800 rounded transition-all ${
+                isRefreshing ? 'animate-spin text-blue-400' : 'text-slate-400'
+              }`}
+            >
+              <RefreshCw size={10} />
+            </button>
+            
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center p-1.5 bg-slate-900 border border-slate-800 hover:bg-slate-850 hover:text-white text-slate-300 rounded transition-colors"
+              title="Configure"
+            >
+              <Settings size={10} />
+            </button>
+          </div>
         </div>
       </header>
 
